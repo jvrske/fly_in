@@ -2,12 +2,14 @@ import sys
 from custom_errors import ParserError
 
 LIST_KEYS = {"hub", "connection"}
+VALID_ZONES = {"normal", "blocked", "restricted", "priority"}
 MUST_HAVE = ["start_hub", "end_hub"]
 
 
 class Parser():
     @staticmethod
-    def parser(map_txt: str):
+    def parser(map_txt: str) -> dict:
+        """Parseia o arquivo de mapa e retorna um dict com os dados."""
         result = {}
         line_numbers = {}
 
@@ -17,17 +19,18 @@ class Parser():
 
                 for i, line in enumerate(f, start=1):
                     line = line.strip()
+                    # ignorar comentários e linhas vazias
                     if not line or line.startswith("#"):
                         continue
 
-                    # Validar primeira linha
+                    # verificação se a first line começa com "nb_drones"
                     if first_valid_line is None:
                         first_valid_line = line
                         if not first_valid_line.startswith("nb_drones"):
                             raise ParserError(f"Line {i}: First line must be \
 nb_drones")
 
-                    # Separar key e value
+                    # criação de key e value para inserir no dict
                     try:
                         key, value = line.split(":", 1)
                     except ValueError:
@@ -35,7 +38,8 @@ nb_drones")
                     key = key.strip()
                     value = value.strip()
 
-                    # Validar duplicados para keys únicas
+                    # verificar hub e connection para criar listas
+                    # e verificar keys duplicadas
                     if key not in LIST_KEYS:
                         if key in result:
                             raise ParserError(f"Line {i}: Duplicate key: \
@@ -45,21 +49,19 @@ nb_drones")
                     else:
                         if key not in result:
                             result[key] = []
-                            line_numbers[key] = i
-                        result[key].append(value)
+                        result[key].append((value, i))  # tupla só para listas
 
         except ParserError as e:
             print(e)
             sys.exit()
 
-        # Validações pós-leitura
         try:
-            # Verificar keys obrigatórias
+            # verificar se start_hub e end_hub existem
             for key in MUST_HAVE:
                 if key not in result:
                     raise ParserError(f"Missing required key: {key}")
 
-            # Validar nb_drones
+            # verificar se nb_drones é um inteiro positivo
             try:
                 nb = int(result["nb_drones"])
             except ValueError:
@@ -68,10 +70,11 @@ nb_drones must be an integer")
             if nb <= 0:
                 raise ParserError(f"Line {line_numbers['nb_drones']}: \
 Number of drones must be positive")
+            result["nb_drones"] = nb
 
-            # Função auxiliar para parsear hubs
-            def parse_hub(value, i):
-                """Retorna dict {'name', 'x', 'y', 'metadata'}"""
+            # função auxiliar para parsear hubs
+            def parse_hub(value: str, i: int) -> dict:
+                """Retorna dict {'name', 'x', 'y', 'metadata', 'line'}"""
                 if "[" in value and "]" in value:
                     parts = value.split("[", 1)
                     coord_part = parts[0].strip()
@@ -81,14 +84,11 @@ Number of drones must be positive")
                     metadata_part = None
 
                 tokens = coord_part.split(maxsplit=3)
-                if not tokens[1].isdigit():
-                    raise ParserError(f"Line {i}: Hub name couldn't have '-' \
-or spaces")
                 if len(tokens) != 3:
                     raise ParserError(f"Line {i}: Hub must have name, x, y")
                 name = tokens[0]
                 if "-" in name:
-                    raise ParserError("Hub name couldn't have '-' or spaces")
+                    raise ParserError(f"Line {i}: Hub name couldn't have '-'")
                 try:
                     x = int(tokens[1])
                     y = int(tokens[2])
@@ -98,19 +98,56 @@ be integers")
                 return {
                     "name": name,
                     "x": x, "y": y,
-                    "metadata": metadata_part}
+                    "metadata": metadata_part,
+                    "line": i
+                }
 
-            # Parsear start_hub
+            # função auxiliar para parsear e validar zones do metadata
+            def parse_metadata(metadata: list) -> list:
+                """Valida e retorna lista de zones"""
+                zones = []
+                for item in metadata:
+                    if item["metadata"] is None:
+                        zones.append(None)
+                        continue
+                    meta = item["metadata"].strip("[]").split()
+                    line = item["line"]
+
+                    zone = None
+
+                    for p in meta:
+                        if p.startswith("zone="):
+                            zone = p.split("=")[1]
+                            break
+
+                    if zone is not None and zone not in VALID_ZONES:
+                        raise ParserError(f"Line {line}: Invalid zone: {zone}")
+                    zones.append(zone)
+                return zones
+
+            # parsear start_hub e end_hub
             result["start_hub"] = parse_hub(result["start_hub"],
                                             line_numbers["start_hub"])
-            # Parsear end_hub
             result["end_hub"] = parse_hub(result["end_hub"],
                                           line_numbers["end_hub"])
-            # Parsear hubs
+
+            # parsear hubs e desempacotar tupla
             parsed_hubs = []
-            for val in result["hub"]:
-                parsed_hubs.append(parse_hub(val, line_numbers["hub"]))
+            for val, line_num in result["hub"]:
+                parsed_hubs.append(parse_hub(val, line_num))
             result["hub"] = parsed_hubs
+
+            parse_metadata(result["hub"])
+
+            def parse_connections(value: str, i: int) -> dict:
+                """Retorna dict {zone1, zone2, metadata}"""
+                wip
+
+            # remover 'line' dos hubs após todas as validações
+            for hub in result["hub"]:
+                hub.pop("line")
+            result["start_hub"].pop("line")
+            result["end_hub"].pop("line")
 
             print(result)
 
@@ -118,6 +155,8 @@ be integers")
             print(e)
             sys.exit()
 
+        return result
+
 
 if __name__ == "__main__":
-    Parser.parser("maps/easy/01_linear_path.txt")
+    Parser.parser("maps/medium/03_priority_puzzle.txt")
