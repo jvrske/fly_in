@@ -4,6 +4,7 @@ from custom_errors import ParserError
 LIST_KEYS = {"hub", "connection"}
 VALID_ZONES = {"normal", "blocked", "restricted", "priority"}
 MUST_HAVE = ["start_hub", "end_hub"]
+VALID_KEYS = ("nb_drones", "start_hub", "hub", "end_hub", "connection")
 
 
 class Parser():
@@ -19,9 +20,12 @@ class Parser():
 
                 for i, line in enumerate(f, start=1):
                     line = line.strip()
-                    # ignorar comentários e linhas vazias
+                    # ignorar comentários e linhas vazias e
+                    # ver se as linhas são válidas
                     if not line or line.startswith("#"):
                         continue
+                    elif not line.startswith(VALID_KEYS):
+                        raise ParserError(f"Line {i}: Invalid line")
 
                     # verificação se a first line começa com "nb_drones"
                     if first_valid_line is None:
@@ -139,16 +143,68 @@ be integers")
 
             parse_metadata(result["hub"])
 
-            def parse_connections(value: str, i: int) -> dict:
-                """Retorna dict {zone1, zone2, metadata}"""
-                wip
+            # função auxiliar para parsear max_link_connections
+            def parse_connections_meta(conn_metadata: str, line: int) -> dict:
+                conn_metadata = conn_metadata.replace("[", "").replace("]", "")
+
+                try:
+                    name, value = conn_metadata.split("=")
+                except ValueError:
+                    raise ParserError(f"Line {line}: Invalid metadata format")
+
+                if name != "max_link_capacity":
+                    raise ParserError(f"Line {line}: Invalid connection \
+metadata")
+
+                try:
+                    value = int(value)
+                    if value <= 0:
+                        raise ParserError(f"Line {line}: max_link_capacity \
+must be a positive integer")
+                except ValueError:
+                    raise ParserError(f"Line {line}: Max link capacity must \
+be a positive integer")
+
+                return {"max_link_capacity": value}
+
+            #   função auxiliar para parsear connections
+            def parse_connections(value: list) -> list:
+                """Retorna lista de dicts {zone1, zone2, metadata}"""
+                parsed_connections = []
+
+                for item, line in value:  # <-- mantém line aqui
+                    try:
+                        parts = item.split('-', maxsplit=1)
+                        if len(parts) != 2:
+                            raise ParserError(f"Line {line}: Invalid \
+connection format")
+
+                        zone1 = parts[0].strip()
+
+                        rest = parts[1].split(maxsplit=1)
+                        zone2 = rest[0].strip()
+
+                        metadata = None
+                        if len(rest) == 2:
+                            metadata = parse_connections_meta(rest[1], line)
+
+                        parsed_connections.append({
+                            "zone1": zone1,
+                            "zone2": zone2,
+                            "metadata": metadata
+                        })
+
+                    except ParserError as e:
+                        raise ParserError(str(e))
+
+                return parsed_connections
+            result["connection"] = parse_connections(result["connection"])
 
             # remover 'line' dos hubs após todas as validações
             for hub in result["hub"]:
                 hub.pop("line")
             result["start_hub"].pop("line")
             result["end_hub"].pop("line")
-
             print(result)
 
         except ParserError as e:
@@ -159,4 +215,4 @@ be integers")
 
 
 if __name__ == "__main__":
-    Parser.parser("maps/medium/03_priority_puzzle.txt")
+    Parser.parser("maps/hard/02_capacity_hell.txt")
