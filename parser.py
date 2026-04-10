@@ -118,15 +118,26 @@ be integers")
                     line = item["line"]
 
                     zone = None
+                    max_drones = None
 
                     for p in meta:
                         if p.startswith("zone="):
-                            zone = p.split("=")[1]
-                            break
+                            zone = p.split("=", 1)[1]
+                        elif p.startswith("max_drones="):
+                            raw = p.split("=", 1)[1]
+                            try:
+                                max_drones = int(raw)
+                            except ValueError:
+                                raise ParserError(f"Line {line}: max_drones \
+must be a positive integer")
+                            if max_drones <= 0:
+                                raise ParserError(f"Line {line}: max_drones \
+must be a positive integer")
 
                     if zone is not None and zone not in VALID_ZONES:
                         raise ParserError(f"Line {line}: Invalid zone: {zone}")
-                    zones.append(zone)
+
+                    zones.append({"zone": zone, "max_drones": max_drones})
                 return zones
 
             # parsear start_hub e end_hub
@@ -141,7 +152,12 @@ be integers")
                 parsed_hubs.append(parse_hub(val, line_num))
             result["hub"] = parsed_hubs
 
-            parse_metadata(result["hub"])
+            # parse_metadata valida start_hub e end_hub também
+            all_hubs = result["hub"] + [result["start_hub"], result["end_hub"]]
+            parse_metadata(all_hubs)
+
+            # conjunto com todos os nomes de hubs definidos
+            defined_hubs = {hub["name"] for hub in all_hubs}
 
             # função auxiliar para parsear max_link_connections
             def parse_connections_meta(conn_metadata: str, line: int) -> dict:
@@ -167,12 +183,13 @@ be a positive integer")
 
                 return {"max_link_capacity": value}
 
-            #   função auxiliar para parsear connections
+            # função auxiliar para parsear connections
             def parse_connections(value: list) -> list:
                 """Retorna lista de dicts {zone1, zone2, metadata}"""
                 parsed_connections = []
+                seen_connections = set()
 
-                for item, line in value:  # <-- mantém line aqui
+                for item, line in value:
                     try:
                         parts = item.split('-', maxsplit=1)
                         if len(parts) != 2:
@@ -183,6 +200,21 @@ connection format")
 
                         rest = parts[1].split(maxsplit=1)
                         zone2 = rest[0].strip()
+
+                        # verificar se as zonas foram definidas
+                        if zone1 not in defined_hubs:
+                            raise ParserError(f"Line {line}: Unknown hub \
+'{zone1}'")
+                        if zone2 not in defined_hubs:
+                            raise ParserError(f"Line {line}: Unknown hub \
+'{zone2}'")
+
+                        # verificar conexões duplicadas (a-b == b-a)
+                        conn_key = frozenset([zone1, zone2])
+                        if conn_key in seen_connections:
+                            raise ParserError(f"Line {line}: Duplicate \
+connection '{zone1}-{zone2}'")
+                        seen_connections.add(conn_key)
 
                         metadata = None
                         if len(rest) == 2:
@@ -198,6 +230,7 @@ connection format")
                         raise ParserError(str(e))
 
                 return parsed_connections
+
             result["connection"] = parse_connections(result["connection"])
 
             # remover 'line' dos hubs após todas as validações
@@ -205,7 +238,6 @@ connection format")
                 hub.pop("line")
             result["start_hub"].pop("line")
             result["end_hub"].pop("line")
-            print(result)
 
         except ParserError as e:
             print(e)
