@@ -10,7 +10,7 @@ VALID_KEYS = ("nb_drones", "start_hub", "hub", "end_hub", "connection")
 class Parser():
     @staticmethod
     def parser(map_txt: str) -> dict:
-        """Parseia o arquivo de mapa e retorna um dict com os dados."""
+        """Parseia o arquivo de mapa e retorna um dict com os dados"""
         result = {}
         line_numbers = {}
 
@@ -26,6 +26,8 @@ class Parser():
                         continue
                     elif not line.startswith(VALID_KEYS):
                         raise ParserError(f"Line {i}: Invalid line")
+                    if line and '#' in line:
+                        line = line.split('#')[0]
 
                     # verificação se a first line começa com "nb_drones"
                     if first_valid_line is None:
