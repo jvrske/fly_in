@@ -1,4 +1,5 @@
 import sys
+from typing import Any
 from custom_errors import ParserError
 
 LIST_KEYS = {"hub", "connection"}
@@ -9,10 +10,10 @@ VALID_KEYS = ("nb_drones", "start_hub", "hub", "end_hub", "connection")
 
 class Parser():
     @staticmethod
-    def parser(map_txt: str) -> dict:
+    def parser(map_txt: str) -> dict[str, Any]:
         """Parseia o arquivo de mapa e retorna um dict com os dados"""
-        result = {}
-        line_numbers = {}
+        result: dict[str, Any] = {}
+        line_numbers: dict[str, int] = {}
 
         try:
             with open(map_txt, 'r') as f:
@@ -79,7 +80,7 @@ Number of drones must be positive")
             result["nb_drones"] = nb
 
             # função auxiliar para parsear hubs
-            def parse_hub(value: str, i: int) -> dict:
+            def parse_hub(value: str, i: int) -> dict[str, Any]:
                 """Retorna dict {'name', 'x', 'y', 'metadata', 'line'}"""
                 if "[" in value and "]" in value:
                     parts = value.split("[", 1)
@@ -109,9 +110,10 @@ be integers")
                 }
 
             # função auxiliar para parsear e validar zones do metadata
-            def parse_metadata(metadata: list) -> list:
+            def parse_metadata(metadata:
+                               list[Any]) -> list[dict[str, Any] | None]:
                 """Valida e retorna lista de zones"""
-                zones = []
+                zones: list[dict[str, Any] | None] = []
                 for item in metadata:
                     if item["metadata"] is None:
                         zones.append(None)
@@ -149,20 +151,22 @@ must be a positive integer")
                                           line_numbers["end_hub"])
 
             # parsear hubs e desempacotar tupla
-            parsed_hubs = []
+            parsed_hubs: list[dict[str, Any]] = []
             for val, line_num in result["hub"]:
                 parsed_hubs.append(parse_hub(val, line_num))
             result["hub"] = parsed_hubs
 
             # parse_metadata valida start_hub e end_hub também
-            all_hubs = result["hub"] + [result["start_hub"], result["end_hub"]]
+            all_hubs: list[dict[str, Any]] = result["hub"] + \
+                [result["start_hub"], result["end_hub"]]
             parse_metadata(all_hubs)
 
             # conjunto com todos os nomes de hubs definidos
             defined_hubs = {hub["name"] for hub in all_hubs}
 
             # função auxiliar para parsear max_link_connections
-            def parse_connections_meta(conn_metadata: str, line: int) -> dict:
+            def parse_connections_meta(conn_metadata: str,
+                                       line: int) -> dict[str, Any]:
                 conn_metadata = conn_metadata.replace("[", "").replace("]", "")
 
                 try:
@@ -175,18 +179,18 @@ must be a positive integer")
 metadata")
 
                 try:
-                    value = int(value)
-                    if value <= 0:
+                    int_value = int(value)
+                    if int_value <= 0:
                         raise ParserError(f"Line {line}: max_link_capacity \
 must be a positive integer")
                 except ValueError:
                     raise ParserError(f"Line {line}: Max link capacity must \
 be a positive integer")
 
-                return {"max_link_capacity": value}
+                return {"max_link_capacity": int_value}
 
             # função auxiliar para parsear connections
-            def parse_connections(value: list) -> list:
+            def parse_connections(value: list[Any]) -> list[dict[str, Any]]:
                 """Retorna lista de dicts {zone1, zone2, metadata}"""
                 parsed_connections = []
                 seen_connections = set()
