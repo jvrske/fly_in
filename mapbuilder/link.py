@@ -1,4 +1,4 @@
-from hub import Hub
+from .hub import Hub
 from typing import Any
 
 

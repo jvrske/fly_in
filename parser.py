@@ -246,7 +246,3 @@ connection '{zone1}-{zone2}'")
             sys.exit()
 
         return result
-
-
-if __name__ == "__main__":
-    Parser.parser("maps/hard/02_capacity_hell.txt")
