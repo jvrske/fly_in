@@ -1,3 +1,7 @@
+from .edge import Link
+from typing import Any
+
+
 class Hub():
     def __init__(self, name: str, x: int, y: int,
                  metadata: dict | None = None) -> None:
@@ -9,7 +13,8 @@ class Hub():
         if metadata:
             self.set_metadata(metadata)
         self.cost()
-        self.links = []
+        self.edges = []
+        self.drones = []
 
     def is_accessible(self) -> bool:
         return self.zone != "blocked"
@@ -32,3 +37,11 @@ class Hub():
             self.cost = 2
         else:
             self.cost = 1
+
+    def get_edge(self, next_vertex: 'Hub') -> Any:
+        for edge in self.edges:
+            if edge.get_next_hub(self) == next_vertex:
+                return edge
+
+    def is_possible(self) -> bool:
+        return len(self.drones) < self.max_drones

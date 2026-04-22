@@ -25,3 +25,17 @@ class Link():
 
     def reset_n_drones(self) -> None:
         self.n_drones = 0
+
+    def get_current_hub(self, current: Hub) -> Hub | None:
+        if self.zone1 == current:
+            return self.zone1
+        if self.zone2 == current:
+            return self.zone2
+        return
+
+    def get_next_hub(self, current: Hub) -> Hub | None:
+        if self.zone1 == current:
+            return self.zone2
+        if self.zone2 == current:
+            return self.zone1
+        return

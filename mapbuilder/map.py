@@ -1,5 +1,5 @@
 from .hub import Hub
-from .link import Link
+from .edge import Link
 
 
 class Map():
@@ -22,11 +22,11 @@ class Map():
             vertex2 = None
 
             for vertex in map:
-                if vertex.name == connection["zone1"]:
+                if vertex.name == c["zone1"]:
                     vertex1 = vertex
-                if vertex.name == connection["zone2"]:
+                if vertex.name == c["zone2"]:
                     vertex2 = vertex
             if vertex1 and vertex2:
-                edge = Link(vertex1, vertex2, connection.get("metadata"))
+                edge = Link(vertex1, vertex2, c.get("metadata"))
                 vertex1.links.append(edge)
                 vertex2.links.append(edge)
