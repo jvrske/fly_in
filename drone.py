@@ -29,6 +29,8 @@ class Drone():
 
             dest.drones.append(self)
             self.vertex = dest
+            if self.vertex == self.path[0]:
+                self.arrived = True
             edge.reset_n_drones()
             self.in_transit = False
             self.transit_edge = None
@@ -48,6 +50,8 @@ class Drone():
             used_edge.att_n_drones()
             target.drones.append(self)
             self.vertex = target
+            if self.vertex == self.path[0]:
+                self.arrived = True
             self.path.pop()
             return f"{self.name}-{self.vertex.name}"
 
