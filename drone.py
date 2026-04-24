@@ -9,8 +9,8 @@ class Drone():
         self.path = path
         self.arrived = False
         self.in_transit = False
-        self.transit_edge = None
-        self.destination = None
+        self.transit_edge = Link | None
+        self.destination = Hub | None
 
     def has_path(self) -> bool:
         """Return True if the drone still has steps left"""
@@ -42,7 +42,8 @@ class Drone():
         used_edge = self.vertex.get_edge(target)
 
         # normal zones and priority
-        if target.metadata["zone"] != "restricted" and target.is_possible() and used_edge.is_available():
+        if target.zone != "restricted" and target.is_possible() \
+                and used_edge.is_available():
             self.vertex.drones.remove(self)
             used_edge.att_n_drones()
             target.drones.append(self)
@@ -51,7 +52,7 @@ class Drone():
             return f"{self.name}-{self.vertex.name}"
 
         # restricted zones
-        if target.metadata["zone"] == "restricted":
+        if target.zone == "restricted":
             if not target.is_possible():
                 return None
 

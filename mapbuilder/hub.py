@@ -1,6 +1,3 @@
-from .edge import Link
-
-
 class Hub():
     """Represents a zone/node in the drone network graph"""
 
@@ -45,7 +42,7 @@ class Hub():
         """Return True if zone has capacity for one more drone"""
         return len(self.drones) < self.max_drones
 
-    def get_edge(self, next_hub: 'Hub') -> 'Link | None':
+    def get_edge(self, next_hub: 'Hub') -> None:
         """Return the Link connecting this hub to next_hub"""
         for edge in self.edges:
             if edge.get_next_hub(self) == next_hub:
