@@ -3,25 +3,26 @@ from mapbuilder.edge import Link
 
 
 class Drone():
-    def __init__(self, name: str, start: Hub, path: list[Hub]) -> None:
+    def __init__(self, name: str, start: Hub,
+                 path: list[Hub] | None = None) -> None:
         self.name = name
         self.vertex = start
         self.path = path
         self.arrived = False
         self.in_transit = False
-        self.transit_edge = Link | None
-        self.destination = Hub | None
+        self.transit_edge: Link | None = None
+        self.destination: Hub | None = None
 
     def has_path(self) -> bool:
-        """Return True if the drone still has steps left"""
+        """return True if the drone still has steps left"""
         return len(self.path) > 0
 
     def next_hub(self) -> Hub | None:
-        """Return the immediate next hub in the path"""
+        """return the immediate next hub in the path"""
         return self.path[-1] if self.path else None
 
     def walk(self) -> str | None:
-        """Advance the drone by one simulation turn"""
+        """advance the drone by one simulation turn"""
         # arrived at destination
         if self.in_transit:
             dest = self.destination
@@ -31,6 +32,7 @@ class Drone():
             self.vertex = dest
             if self.vertex == self.path[0]:
                 self.arrived = True
+                self.vertex.drones.remove(self)
             edge.reset_n_drones()
             self.in_transit = False
             self.transit_edge = None
@@ -52,6 +54,7 @@ class Drone():
             self.vertex = target
             if self.vertex == self.path[0]:
                 self.arrived = True
+                self.vertex.drones.remove(self)
             self.path.pop()
             return f"{self.name}-{self.vertex.name}"
 

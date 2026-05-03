@@ -3,21 +3,21 @@ from .edge import Link
 
 
 class Map():
-    """Builds and holds the drone network graph"""
+    """builds and holds the drone network graph"""
 
     def __init__(self, nb_drones: int, connection: list[dict],
                  start_hub: dict, end_hub: dict,
                  hub: list[dict]) -> None:
-        """Initialize the map from parsed data"""
+        """initialize the map from parsed data"""
         self.nb_drones = nb_drones
         self.start: Hub
         self.end: Hub
         self.hubs: list[Hub]
-        self._build(start_hub, end_hub, hub, connection)
+        self.build(start_hub, end_hub, hub, connection)
 
-    def _build(self, start_hub: dict, end_hub: dict,
-               hub: list[dict], connection: list[dict]) -> None:
-        """Instantiate Hub and Link objects and wire them together"""
+    def build(self, start_hub: dict, end_hub: dict, hub: list[dict],
+              connection: list[dict]) -> None:
+        """instantiate Hub and Link objects and wire them together"""
         self.start = Hub(**start_hub)
         self.end = Hub(**end_hub)
         self.hubs = [self.start, self.end] + [Hub(**h) for h in hub]
@@ -32,7 +32,7 @@ class Map():
                 v2.edges.append(edge)
 
     def get_hub(self, name: str) -> Hub | None:
-        """Find a hub by name"""
+        """find a hub by name"""
         for h in self.hubs:
             if h.name == name:
                 return h

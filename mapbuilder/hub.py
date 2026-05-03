@@ -1,9 +1,9 @@
 class Hub():
-    """Represents a zone/node in the drone network graph"""
+    """represents a zone/node in the drone network graph"""
 
     def __init__(self, name: str, x: int, y: int,
                  metadata: dict | None = None) -> None:
-        """Initialize a Hub"""
+        """initialize a Hub"""
         self.name = name
         self.xy = (x, y)
         self.zone = "normal"
@@ -16,7 +16,7 @@ class Hub():
         self.drones = []
 
     def _calc_cost(self) -> int:
-        """Return movement cost based on zone type"""
+        """return movement cost based on zone type"""
         if self.zone == "blocked":
             return 3
         elif self.zone == "restricted":
@@ -25,7 +25,7 @@ class Hub():
             return 1
 
     def set_metadata(self, metadata: dict) -> None:
-        """Apply metadata dict to hub attributes"""
+        """apply metadata dict to hub attributes"""
         for key, value in metadata.items():
             if key == "color":
                 self.color = value
@@ -35,15 +35,15 @@ class Hub():
                 self.max_drones = value
 
     def is_accessible(self) -> bool:
-        """Return True if drones can enter this zone"""
+        """return True if drones can enter this zone"""
         return self.zone != "blocked"
 
     def is_possible(self) -> bool:
-        """Return True if zone has capacity for one more drone"""
+        """return True if zone has capacity for one more drone"""
         return len(self.drones) < self.max_drones
 
-    def get_edge(self, next_hub: 'Hub') -> None:
-        """Return the Link connecting this hub to next_hub"""
+    def get_edge(self, next_hub: 'Hub'):
+        """return the Link connecting this hub to next_hub"""
         for edge in self.edges:
             if edge.get_next_hub(self) == next_hub:
                 return edge

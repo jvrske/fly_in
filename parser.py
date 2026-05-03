@@ -11,7 +11,7 @@ class Parser():
 
     @staticmethod
     def parser(map_txt: str) -> dict:
-        """Parseia o arquivo de mapa e retorna um dict com os dados."""
+        """parseia o arquivo de mapa e retorna um dict com os dados"""
         result = {}
         line_numbers = {}
 
@@ -78,7 +78,7 @@ class Parser():
             result["nb_drones"] = nb
 
             def parse_hub(value: str, i: int) -> dict:
-                """Retorna dict com name, x, y e raw metadata string."""
+                """retorna dict com name, x, y e raw metadata string"""
                 if "[" in value and "]" in value:
                     parts = value.split("[", 1)
                     coord_part = parts[0].strip()
@@ -116,7 +116,7 @@ class Parser():
                 }
 
             def parse_hub_metadata(hub: dict) -> dict:
-                """Parseia o metadata de um hub e retorna dict estruturado."""
+                """parseia o metadata de um hub e retorna dict estruturado"""
                 line = hub["line"]
                 metadata_str = hub.get("_metadata_str")
 
@@ -163,7 +163,7 @@ class Parser():
                 }
 
             def apply_metadata(hub: dict) -> dict:
-                """Remove campos temporários e aplica metadata estruturado."""
+                """remove campos temporários e aplica metadata estruturado"""
                 meta = parse_hub_metadata(hub)
                 hub.pop("_metadata_str", None)
                 hub.pop("line", None)
@@ -189,7 +189,7 @@ class Parser():
             }
 
             def parse_connections_meta(conn_meta: str, line: int) -> dict:
-                """Parseia metadata de uma connection."""
+                """parseia metadata de uma connection"""
                 inner = conn_meta.replace("[", "").replace("]", "").strip()
                 try:
                     name, value = inner.split("=")
@@ -216,7 +216,7 @@ class Parser():
                 return {"max_link_capacity": cap}
 
             def parse_connections(value: list) -> list:
-                """Retorna lista de dicts com zone1, zone2, metadata."""
+                """retorna lista de dicts com zone1, zone2, metadata"""
                 parsed = []
                 seen = set()
 
