@@ -45,6 +45,9 @@ class Drone():
         target = self.path[-1]
         used_edge = self.vertex.get_edge(target)
 
+        if used_edge is None:
+            return None
+
         # normal zones and priority
         if target.zone != "restricted" and target.is_possible() \
                 and used_edge.is_available():

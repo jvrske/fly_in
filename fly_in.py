@@ -1,17 +1,17 @@
 from parser import Parser
 from simulator import Simulator
 from mapbuilder.map import Map
+from algorithm.dijkstra import Dijkstra
 
 
 if __name__ == "__main__":
-    cfg = Parser.parser("maps/easy/01_linear_path.txt")
+    cfg = Parser.parser("maps/challenger/01_the_impossible_dream.txt")
     graph = Map(**cfg)
+
+    dijkstra = Dijkstra()
+    path = dijkstra.solve(graph)
+
     sim = Simulator(graph, graph.nb_drones)
-
-    path = [graph.get_hub("goal"),
-            graph.get_hub("waypoint2"),
-            graph.get_hub("waypoint1")]
-
     for drone in sim.drones:
         drone.path = path.copy()
 
