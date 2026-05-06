@@ -7,7 +7,7 @@ class Drone():
                  path: list[Hub] | None = None) -> None:
         self.name = name
         self.vertex = start
-        self.path = path
+        self.path: list[Hub] = path if path is not None else []
         self.arrived = False
         self.in_transit = False
         self.transit_edge: Link | None = None
@@ -27,6 +27,7 @@ class Drone():
         if self.in_transit:
             dest = self.destination
             edge = self.transit_edge
+            assert dest is not None and edge is not None
 
             dest.drones.append(self)
             self.vertex = dest

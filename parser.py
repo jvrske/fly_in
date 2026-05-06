@@ -1,4 +1,5 @@
 import sys
+from typing import Any
 from custom_errors import ParserError
 
 LIST_KEYS = {"hub", "connection"}
@@ -12,8 +13,8 @@ class Parser():
     @staticmethod
     def parser(map_txt: str) -> dict:
         """parseia o arquivo de mapa e retorna um dict com os dados"""
-        result = {}
-        line_numbers = {}
+        result: dict[str, Any] = {}
+        line_numbers: dict[str, int] = {}
 
         try:
             with open(map_txt, 'r') as f:

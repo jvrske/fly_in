@@ -1,3 +1,9 @@
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .edge import Link
+    from drone import Drone
+
+
 class Hub():
     """represents a zone/node in the drone network graph"""
 
@@ -12,8 +18,8 @@ class Hub():
         if metadata:
             self.set_metadata(metadata)
         self.movement_cost = self._calc_cost()
-        self.edges = []
-        self.drones = []
+        self.edges: list[Link] = []
+        self.drones: list[Drone] = []
 
     def _calc_cost(self) -> int:
         """return movement cost based on zone type"""
@@ -42,7 +48,7 @@ class Hub():
         """return True if zone has capacity for one more drone"""
         return len(self.drones) < self.max_drones
 
-    def get_edge(self, next_hub: 'Hub'):
+    def get_edge(self, next_hub: 'Hub') -> Link | None:
         """return the Link connecting this hub to next_hub"""
         for edge in self.edges:
             if edge.get_next_hub(self) == next_hub:

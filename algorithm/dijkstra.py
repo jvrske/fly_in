@@ -1,16 +1,15 @@
 from mapbuilder.map import Map
 from mapbuilder.hub import Hub
-from mapbuilder.edge import Link
 import heapq
 
 
 class Dijkstra():
     """find shortest path from start to end using Dijkstra's algorithm"""
     def solve(self, graph: Map) -> list[Hub]:
-        dist = {hub: int(999) for hub in graph.hubs}
+        dist: dict[Hub, int] = {hub: int(999) for hub in graph.hubs}
         dist[graph.start] = 0
-        prev = {hub: None for hub in graph.hubs}
-        queue = [(0, 0, graph.start)]
+        prev: dict[Hub, Hub | None] = {hub: None for hub in graph.hubs}
+        queue: list[tuple[float, int, Hub]] = [(0, 0, graph.start)]
         counter = 1
 
         while queue:
@@ -42,8 +41,8 @@ class Dijkstra():
     def build_path(self, prev: dict[Hub, Hub | None],
                    graph: Map) -> list[Hub]:
         """reconstruct path from prev dict. returns [end, ..., first_step]"""
-        path = []
-        current = graph.end
+        path: list[Hub] = []
+        current: Hub | None = graph.end
 
         while current is not None:
             path.append(current)
