@@ -29,11 +29,13 @@ class Drone():
             edge = self.transit_edge
             assert dest is not None and edge is not None
 
+            if not dest.is_possible():
+                return None
+
             dest.drones.append(self)
             self.vertex = dest
             if self.vertex == self.path[0]:
                 self.arrived = True
-                self.vertex.drones.remove(self)
             edge.reset_n_drones()
             self.in_transit = False
             self.transit_edge = None
@@ -58,13 +60,12 @@ class Drone():
             self.vertex = target
             if self.vertex == self.path[0]:
                 self.arrived = True
-                self.vertex.drones.remove(self)
             self.path.pop()
             return f"{self.name}-{self.vertex.name}"
 
         # restricted zones
         if target.zone == "restricted":
-            if not target.is_possible():
+            if not used_edge.is_available():
                 return None
 
             self.vertex.drones.remove(self)

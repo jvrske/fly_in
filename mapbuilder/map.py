@@ -19,7 +19,9 @@ class Map():
               connection: list[dict]) -> None:
         """instantiate Hub and Link objects and wire them together"""
         self.start = Hub(**start_hub)
+        self.start.is_endpoint = True
         self.end = Hub(**end_hub)
+        self.end.is_endpoint = True
         self.hubs = [self.start, self.end] + [Hub(**h) for h in hub]
         hub_index: dict[str, Hub] = {h.name: h for h in self.hubs}
 

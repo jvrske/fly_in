@@ -21,6 +21,7 @@ class Hub():
         self.movement_cost = self._calc_cost()
         self.edges: list[Link] = []
         self.drones: list[Drone] = []
+        self.is_endpoint = False
 
     def _calc_cost(self) -> int:
         """return movement cost based on zone type"""
@@ -47,6 +48,8 @@ class Hub():
 
     def is_possible(self) -> bool:
         """return True if zone has capacity for one more drone"""
+        if self.is_endpoint:
+            return True
         return len(self.drones) < self.max_drones
 
     def get_edge(self, next_hub: 'Hub') -> Link | None:

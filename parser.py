@@ -128,8 +128,15 @@ class Parser():
                 if metadata_str is not None:
                     inner = metadata_str.strip("[]")
                     parts = inner.split()
+                    seen_keys: set[str] = set()
 
                     for p in parts:
+                        key = p.split("=", 1)[0]
+                        if key in seen_keys:
+                            raise ParserError(
+                                f"Line {line}: Duplicate metadata key {key}"
+                            )
+                        seen_keys.add(key)
                         if p.startswith("zone="):
                             zone = p.split("=", 1)[1]
                             if zone not in VALID_ZONES:
