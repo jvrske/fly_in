@@ -30,10 +30,3 @@ class Map():
                 edge = Link(v1, v2, c.get("metadata"))
                 v1.edges.append(edge)
                 v2.edges.append(edge)
-
-    def get_hub(self, name: str) -> Hub | None:
-        """find a hub by name"""
-        for h in self.hubs:
-            if h.name == name:
-                return h
-        return None
