@@ -29,7 +29,6 @@ class Simulator():
 
     def run(self) -> None:
         """run the simulation until all drones arrive or deadlock"""
-        counter = 0
         while not self.all_arrived():
             self.turn += 1
             turn_moves = []
@@ -45,5 +44,4 @@ class Simulator():
             if turn_moves:
                 print(" ".join(turn_moves))
             self.reset_edges()
-            counter += 1
-        print(counter)
+        print(self.turn)
